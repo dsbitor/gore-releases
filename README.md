@@ -14,7 +14,7 @@ queryable SQLite journal, not scrollback.
 
 ## Download
 
-No release has been published yet. This repository holds
+No source release has been published on GitHub yet. This repository holds
 compiled binaries and release notes only, gore's own source
 is developed separately and is not published here.
 
