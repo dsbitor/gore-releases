@@ -14,20 +14,19 @@ queryable SQLite journal, not scrollback.
 
 ## Download
 
-No source release has been published on GitHub yet. This repository holds
-compiled binaries and release notes only, gore's own source
-is developed separately and is not published here.
-
-Once a release exists, the intended path on macOS and Linux:
+On macOS and Linux:
 
 ```bash
-brew install gore
+brew install dsbitor/gore/gore
 ```
 
-(planned, once a Homebrew tap exists) or download a signed
-and notarized (macOS) / checksummed (all platforms) archive
-directly from this repository's
-[Releases page](https://github.com/dsbitor/gore-releases/releases).
+Or download a signed and notarized (macOS) / checksummed (all
+platforms) archive directly from this repository's
+[Releases page](https://github.com/dsbitor/gore-releases/releases/latest),
+verify it against the accompanying `SHA256SUMS`, and put the
+binary on your `PATH`. This repository holds compiled
+binaries and release notes only; gore's own source is
+developed separately and is not published here.
 
 ---
 
