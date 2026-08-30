@@ -3,7 +3,7 @@
 This is not a toy demo. It is the actual script that built and published
 the release you are looking at right now — cross-compiling three
 platform binaries, code-signing and notarizing the macOS one, rendering
-the [Programmer's Reference Manual](../../../gore-releases/releases/latest/download/gore-prm.pdf)
+the [Programmer's Reference Manual](https://github.com/dsbitor/gore-releases/releases/latest/download/gore-prm.pdf)
 to PDF, checksumming everything, and publishing it all here, to
 `dsbitor/gore-releases`.
 
