@@ -1,0 +1,32 @@
+gbatch_version = ">= 0"
+
+# Versions are pinned by hand here, the same philosophy gore's own
+# release pipeline uses for release_line: chosen deliberately, not
+# resolved to "whatever is newest today" automatically. Bump these on
+# purpose when you want newer tools; each one was a real, working URL
+# at the time this example was written.
+tools = [
+    {
+        "name": "sqlite",
+        "url": "https://www.sqlite.org/2026/sqlite-tools-osx-arm64-3530400.zip",
+        "filename": "sqlite-tools-osx-arm64-3530400.zip",
+    },
+    {
+        "name": "fossil",
+        "url": "https://fossil-scm.org/home/uv/fossil-mac-arm-2.28.tar.gz",
+        "filename": "fossil-mac-arm-2.28.tar.gz",
+    },
+    {
+        "name": "go",
+        "url": "https://go.dev/dl/go1.27.0.darwin-arm64.tar.gz",
+        "filename": "go1.27.0.darwin-arm64.tar.gz",
+    },
+    {
+        "name": "quarto",
+        "url": "https://github.com/quarto-dev/quarto-cli/releases/download/v1.10.18/quarto-1.10.18-macos.tar.gz",
+        "filename": "quarto-1.10.18-macos.tar.gz",
+    },
+]
+
+download_dir = "downloads"
+bundle_name = "tooling-bundle.zip"

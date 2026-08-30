@@ -1,0 +1,12 @@
+gbatch_version = ">= 0"
+
+def main(ctx, cfg):
+    result = ctx.run(
+        id = "sum",
+        program = "awk",
+        args = ["-F,", "{sum += $2} END {print sum}", "sales.csv"],
+    )
+    if result.failed:
+        ctx.fail("awk failed", result.error)
+        return
+    ctx.success("total units sold: " + result.stdout.strip())

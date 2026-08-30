@@ -1,0 +1,10 @@
+gbatch_version = ">= 0"
+
+# Point this at whatever SQLite database is worth protecting. This
+# example demos it against a copy of gore's own journal.db.
+db_path = "journal.db"
+backup_dir = "backups"
+
+# "Today's backup plus the four before it" — a typical business week's
+# worth of daily backups, five files on disk at any time.
+keep_count = 5

@@ -1,0 +1,86 @@
+gbatch_version = ">= 0"
+
+# WARNING: this script downloads four real tools and re-packages them
+# into a zip bundle for local, offline distribution. At the pinned
+# versions in config.gbatch below, that's roughly 325 MB downloaded
+# (Go and Quarto are the bulk of it) plus a similarly sized output
+# bundle, since already-compressed archives don't shrink much further
+# under zip — call it ~650 MB of working storage at peak, all of it
+# under cfg.download_dir and cfg.bundle_name. Bumping any pinned
+# version later, especially Go or Quarto, can only make this larger,
+# never smaller; check config.gbatch's own URLs before assuming this
+# number still holds.
+
+load("config.gbatch", "cfg")
+
+# Downloads four real, independently maintained CLI tools, SQLite,
+# Fossil, Go, and Quarto, gore's own toolset (Taskfile.yml,
+# standards-go.md). Quarto's own PDF rendering needs LaTeX and Pandoc;
+# rather than pulling in a multi-gigabyte TeX distribution as part of
+# this script, it checks whether both are already on this machine and
+# warns, by name, if either is missing, the same thing `quarto check`
+# itself would tell you.
+def main(ctx, cfg):
+    ctx.ensure_dir(cfg.download_dir)
+
+    downloaded = []
+    for tool in cfg.tools:
+        path = download_tool(ctx, cfg, tool)
+        if path == None:
+            return
+        downloaded.append(path)
+
+    check_quarto_dependencies(ctx)
+
+    if not build_bundle(ctx, cfg, downloaded):
+        return
+
+    ctx.success("bundle ready: " + cfg.bundle_name)
+
+def download_tool(ctx, cfg, tool):
+    out_path = std.path.join(cfg.download_dir, tool["filename"])
+    result = ctx.run(
+        id = "download-" + tool["name"],
+        program = "curl",
+        args = ["-sL", "-o", out_path, tool["url"]],
+        timeout = "5m",
+    )
+    if result.failed:
+        ctx.fail("download failed for " + tool["name"], result.error)
+        return None
+    ctx.success("downloaded " + tool["name"])
+    return out_path
+
+# check_quarto_dependencies looks for pdflatex and pandoc the same way
+# a shell script would, `which`, and logs a named warning for each one
+# missing, rather than downloading either: a full LaTeX distribution
+# runs from tens of megabytes to several gigabytes, far outside what a
+# "download four small CLIs" bundle should silently balloon into.
+def check_quarto_dependencies(ctx):
+    for tool_name in ["pdflatex", "pandoc"]:
+        result = ctx.run(
+            id = "check-" + tool_name,
+            program = "which",
+            args = [tool_name],
+        )
+        if result.failed:
+            ctx.log(
+                tool_name + " not found; Quarto needs it to render PDFs and it is not included in this bundle",
+                severity = "warning",
+                fields = {"missing": tool_name},
+            )
+        else:
+            ctx.success(tool_name + " already present")
+
+def build_bundle(ctx, cfg, files):
+    args = ["-j", cfg.bundle_name] + files
+    result = ctx.run(
+        id = "zip-bundle",
+        program = "zip",
+        args = args,
+        timeout = "3m",
+    )
+    if result.failed:
+        ctx.fail("could not build bundle", result.error)
+        return False
+    return True

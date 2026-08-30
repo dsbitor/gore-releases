@@ -72,6 +72,19 @@ shasum -a 256 -c SHA256SUMS
 Real, worked examples of gore scripts running for real, not
 snippets. See [`examples/`](examples/).
 
+- [`examples/filtering-with-awk.md`](examples/filtering-with-awk.md) —
+  the smallest useful gore script: run `awk` on a CSV and capture the
+  result. Start here.
+- [`examples/backup-and-prune.md`](examples/backup-and-prune.md) — back
+  up a SQLite database with its own online-safe `.backup` command, then
+  prune old backups down to a five-file rotation.
+- [`examples/release-count-report.md`](examples/release-count-report.md)
+  — a `curl | jq` habit translated into `ctx.pipe`, checking this
+  repository's own release count against a maintenance threshold.
+- [`examples/tooling-bundle.md`](examples/tooling-bundle.md) —
+  downloads SQLite, Fossil, Go, and Quarto and re-packages them into an
+  offline distribution bundle. Real bandwidth and disk cost; read the
+  warning at the top before running it.
 - [`examples/release-pipeline.md`](examples/release-pipeline.md) —
   the actual script that built and published this release, and the
   real `gore printlog` transcript of it running: cross-compiling,

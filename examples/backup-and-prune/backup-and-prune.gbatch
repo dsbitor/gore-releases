@@ -1,0 +1,74 @@
+gbatch_version = ">= 0"
+
+load("config.gbatch", "cfg")
+
+# Backs up a SQLite database via its own online-safe .backup command,
+# not a plain file copy — copying a live SQLite file risks a torn,
+# inconsistent snapshot if a writer touches it mid-copy, something
+# .backup is specifically designed to avoid. Then prunes down to
+# cfg.keep_count, oldest first, the same retention shape as a typical
+# daily-backup rotation.
+def main(ctx, cfg):
+    ctx.ensure_dir(cfg.backup_dir)
+
+    stamp_result = ctx.run(
+        id = "timestamp",
+        program = "date",
+        args = ["+%Y%m%d-%H%M%S"],
+    )
+    if stamp_result.failed:
+        ctx.fail("could not read the clock", stamp_result.error)
+        return
+    stamp = stamp_result.stdout.strip()
+
+    # ctx.run_id makes the filename unique even if two backups land in
+    # the same second, and doubles as a cross-reference back to
+    # `gore printlog <run-id>` for this exact backup.
+    backup_name = "journal-" + stamp + "-run" + str(ctx.run_id) + ".db"
+    backup_path = std.path.join(cfg.backup_dir, backup_name)
+
+    backup_result = ctx.run(
+        id = "sqlite-backup",
+        program = "sqlite3",
+        args = [cfg.db_path, ".backup " + backup_path],
+    )
+    if backup_result.failed:
+        ctx.fail("backup failed", backup_result.error)
+        return
+    ctx.success("backed up " + cfg.db_path + " to " + backup_path)
+
+    prune(ctx, cfg)
+
+# prune lists existing backups the same way a shell script would,
+# gore has no directory-listing primitive of its own, then deletes the
+# oldest ones down to cfg.keep_count. find avoids the "no matches"
+# error a shell glob throws on an empty directory; sort relies on the
+# timestamp prefix in each filename to put oldest first.
+def prune(ctx, cfg):
+    listing = ctx.pipe(
+        id = "list-backups",
+        stages = [
+            ctx.step(id = "find-backups", program = "find", args = [cfg.backup_dir, "-maxdepth", "1", "-name", "journal-*.db"]),
+            ctx.step(id = "sort-backups", program = "sort"),
+        ],
+    )
+    if listing.failed:
+        ctx.fail(listing.failed_step + " failed", listing.error)
+        return
+
+    paths = []
+    for line in listing.output.strip().split("\n"):
+        if line != "":
+            paths.append(line)
+
+    excess = len(paths) - cfg.keep_count
+    if excess <= 0:
+        ctx.success("no pruning needed, " + str(len(paths)) + " backups on hand")
+        return
+
+    for old_path in paths[:excess]:
+        result = ctx.remove(old_path)
+        if result.failed:
+            ctx.fail("could not remove " + old_path, result.error)
+            return
+        ctx.success("pruned " + old_path)

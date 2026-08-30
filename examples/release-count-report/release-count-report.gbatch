@@ -1,0 +1,36 @@
+gbatch_version = ">= 0"
+
+# Translates a familiar `curl ... | jq ...` habit into gore: fetch the
+# real release list for dsbitor/gore-releases from GitHub's public API,
+# no authentication needed, and count it. Past a threshold, this is a
+# maintenance signal, not a failure, so it's logged as a warning, not
+# ctx.fail: an old-releases pile-up is worth someone's attention, but
+# it isn't this run's own problem.
+def main(ctx, cfg):
+    result = ctx.pipe(
+        id = "release-count",
+        stages = [
+            ctx.step(
+                id = "fetch",
+                program = "curl",
+                args = ["-s", "https://api.github.com/repos/dsbitor/gore-releases/releases"],
+            ),
+            ctx.step(id = "count", program = "jq", args = ["length"]),
+        ],
+    )
+    if result.failed:
+        ctx.fail(result.failed_step + " failed", result.error)
+        return
+
+    count = int(result.output.strip())
+    threshold = 10
+
+    if count > threshold:
+        ctx.log(
+            "maintenance required: " + str(count) + " releases published, consider pruning old ones",
+            severity = "warning",
+            fields = {"count": count, "threshold": threshold},
+        )
+        return
+
+    ctx.success(str(count) + " releases published, within the maintenance threshold (" + str(threshold) + ")")
