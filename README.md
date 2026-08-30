@@ -68,6 +68,17 @@ archives:
 shasum -a 256 -c SHA256SUMS
 ```
 
+## Examples
+
+Real, worked examples of gore scripts running for real, not
+snippets. See [`examples/`](examples/).
+
+- [`examples/release-pipeline.md`](examples/release-pipeline.md) —
+  the actual script that built and published this release, and the
+  real `gore printlog` transcript of it running: cross-compiling,
+  code-signing, notarizing, rendering the reference manual to PDF,
+  checksumming, and publishing.
+
 ## Source
 
 gore's source is developed separately and is not published
