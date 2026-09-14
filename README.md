@@ -20,11 +20,6 @@ On macOS and Linux:
 brew install dsbitor/gore/gore
 ```
 
-**A note on Homebrew for v0.2.112.** Following an unrelated
-Homebrew upgrade, `brew install` for this release has not yet
-been verified as working. Until it's confirmed, either wait,
-or use the direct download below.
-
 Or download a signed and notarized (macOS) / checksummed (all
 platforms) archive directly from this repository's
 [Releases page](https://github.com/dsbitor/gore-releases/releases/latest),
