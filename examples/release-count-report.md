@@ -64,27 +64,32 @@ confirm, safe to run as often as you like. Unedited `gore printlog`
 output from a real run against the real repository:
 
 ```
-Run 17 — run — release-count-report.gbatch
+Run 236 — run — release-count-report.gbatch
   gore version: 0.1.0  (script requires >= 0)
-  host:         MBP.local (pid 8965)
+  host:         MBP.local (pid 93937)
   user:         davidbanham
-  started:      2026-08-30T23:21:38.951Z
-  ended:        2026-08-30T23:21:39.241Z  (duration 0.290s)
+  started:      2026-09-19T20:40:53.794Z
+  ended:        2026-09-19T20:40:54.042Z  (duration 0.248s)
   mode:         run  (interactive=no, unattended=yes)
   result:       OK  (exit code 0)
 
 Events:
-  23:21:39.224  step          fetch     curl -s https://api.github.com/repos/dsbitor/gore-releases/releases
-                               → exit 0  (0.270s)  OK
-  23:21:39.240  step          count     jq length
-                               → exit 0  (0.013s)  OK
-  23:21:39.241  diagnostic    [info] 2 releases published, within the maintenance threshold (10)
+  20:40:54.033  step          fetch     curl -s https://api.github.com/repos/dsbitor/gore-releases/releases
+                               → exit 0  (0.236s)  OK
+  20:40:54.040  step          count     jq length
+                               → exit 0  (0.005s)  OK
+  20:40:54.041  diagnostic    [info] 9 releases published, within the maintenance threshold (10)
 ```
 
-Two releases exist at the time this ran (`v0.1.74`, `v0.1.77`), well
-under the threshold — so this transcript shows the quiet path, not the
-warning. Bump `threshold` down to `1` locally and run it again if you
-want to see the `[warning] maintenance required` branch fire for real.
+Nine releases existed at the time this ran, still under the
+threshold but not by much — so this transcript happens to show the
+quiet path, not the warning. This count only ever goes up, and this
+repository will cross ten releases eventually, so don't take "within
+threshold" as a permanent property of this example; it's a live query
+against whatever this repository's real release count is the moment
+you run it. Bump `threshold` down locally and run it again if you want
+to see the `[warning] maintenance required` branch fire for real
+without waiting for that to happen naturally.
 
 ## Where this goes next
 
