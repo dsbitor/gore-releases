@@ -1,0 +1,30 @@
+gbatch_version = ">= 0"
+
+# "detail" (one row per notarized release) or "summary" (aggregate
+# stats). A config value, not a CLI argument: gore scripts take no
+# custom flags/positional args of their own (gore-design-baseline.md
+# Section 3, "Command-line invocation"), so switching modes means
+# editing this file, the same way release/config.gbatch's own
+# publish_stage is a deliberate edit, not a flag passed at invocation.
+mode = "detail"
+
+# Empty means "use gore's own default resolution": $XDG_DATA_HOME/gore/
+# journal.db if XDG_DATA_HOME is set, otherwise
+# $HOME/.local/share/gore/journal.db (cmd/gore/journal.go's own
+# defaultJournalPath). Set this to point at a different journal
+# entirely, e.g. one copied from another machine.
+journal_db = ""
+
+# sql_dir points at the two .sql files
+# notarization-delay-report.gbatch feeds to sqlite3 via ctx.run's
+# stdin_file (Docs/gore-prm.md, "Querying a SQLite database from a
+# step"). Relative, like db_path in backup-and-prune/config.gbatch:
+# ctx.run resolves a relative path against gore's own process
+# directory, so this works as-is provided you run gore from inside
+# this example directory. A real deployment would likely build this
+# from an absolute repo_root instead, the way release/config.gbatch
+# does, since a relative path stops working the moment gore is
+# invoked from somewhere else.
+sql_dir = "sql"
+
+allowed_env_public = ["HOME", "XDG_DATA_HOME"]

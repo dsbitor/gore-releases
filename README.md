@@ -78,6 +78,10 @@ snippets. See [`examples/`](examples/).
 - [`examples/backup-and-prune.md`](examples/backup-and-prune.md) — back
   up a SQLite database with its own online-safe `.backup` command, then
   prune old backups down to a five-file rotation.
+- [`examples/notarization-delay-report.md`](examples/notarization-delay-report.md)
+  — queries gore's own journal database from a step, real SQL kept in
+  its own `.sql` files and fed to `sqlite3` via `ctx.run`'s
+  `stdin_file`, not embedded as Starlark strings.
 - [`examples/release-count-report.md`](examples/release-count-report.md)
   — a `curl | jq` habit translated into `ctx.pipe`, checking this
   repository's own release count against a maintenance threshold.

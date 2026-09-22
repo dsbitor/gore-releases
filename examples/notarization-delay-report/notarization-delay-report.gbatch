@@ -1,0 +1,114 @@
+gbatch_version = ">= 0"
+
+load("config.gbatch", "cfg")
+
+# Reports Apple notarization ticket propagation delays from gore's own
+# SQLite journal: the gap between notarytool reporting a submission
+# Accepted and Gatekeeper's own online check actually being able to
+# retrieve that ticket (gore-design-baseline.md Section 6a, "A second
+# real operational detail, found cutting v0.4.121"). A converted, gore-
+# native version of the original bash+sqlite3 utility this replaces:
+# same two SQL queries, same default journal path resolution, run
+# through ctx.run instead of a raw shell heredoc, so the query itself
+# is journaled, dry-run-safe, and subject to the same confirmation
+# model as every other step in this project.
+#
+# The queries themselves live in sql/notarization-detail.sql and
+# sql/notarization-summary.sql, not as strings in this file: ctx.run's
+# stdin_file feeds each one straight to sqlite3 on stdin
+# (`sqlite3 <journal.db> < query.sql`), the same way you'd run either
+# file by hand. Worked as a PRM example of ctx.run's stdin_file for
+# exactly this reason -- see Docs/gore-prm.md, "Querying a SQLite
+# database from a step".
+def main(ctx, cfg):
+    if cfg.mode != "detail" and cfg.mode != "summary":
+        ctx.fail("config.gbatch: mode must be \"detail\" or \"summary\", got " + repr(cfg.mode), None)
+        return
+
+    journal_db = resolve_journal_db(ctx, cfg)
+
+    # ctx.fail only marks the run failed; it doesn't stop main() by
+    # itself (the PRM is explicit about this), and a plain-function
+    # `then` has no return value ctx.if_not_exists hands back either.
+    # missing_journal is a one-key dict used purely as a mutable box
+    # report_missing can set from inside its own closure, the only way
+    # a callback with no return value can signal "stop" back out to
+    # main(), since Starlark closures can mutate a shared container's
+    # contents even though they can't rebind an outer variable directly.
+    missing_journal = {"flag": False}
+
+    def report_missing():
+        missing_journal["flag"] = True
+        ctx.fail(
+            "journal database not found at " + journal_db + "; set journal_db in config.gbatch to override",
+            None,
+        )
+
+    ctx.if_not_exists(journal_db, then = report_missing)
+    if missing_journal["flag"]:
+        return
+
+    if cfg.mode == "summary":
+        run_summary(ctx, journal_db, cfg.sql_dir)
+    else:
+        run_detail(ctx, journal_db, cfg.sql_dir)
+
+# resolve_journal_db mirrors cmd/gore/journal.go's own
+# defaultJournalPath exactly, since this report has no other source of
+# truth for "where gore itself would have written the journal it's
+# about to read": cfg.journal_db first if set, else $XDG_DATA_HOME/gore
+# /journal.db if that's set, else $HOME/.local/share/gore/journal.db.
+def resolve_journal_db(ctx, cfg):
+    if cfg.journal_db != "":
+        return cfg.journal_db
+
+    xdg_data_home = ctx.env("XDG_DATA_HOME")
+    if xdg_data_home != "":
+        return std.path.join(xdg_data_home, "gore", "journal.db")
+
+    home = ctx.env("HOME")
+    return std.path.join(home, ".local", "share", "gore", "journal.db")
+
+# run_detail lists one row per successfully-notarized release: how long
+# notarize-submit itself took, how long Gatekeeper's own online check
+# took to actually accept the result afterward (NULL/blank if no
+# gatekeeper-check-spctl step exists for that run yet, an older release
+# predating that check), how many attempts that took, and whether it
+# ultimately succeeded. The query itself lives in
+# sql/notarization-detail.sql; see that file for the constants it
+# defines up front and the reasoning behind the joins.
+def run_detail(ctx, journal_db, sql_dir):
+    result = ctx.run(
+        id = "query-detail",
+        program = "sqlite3",
+        args = ["-header", "-column", journal_db],
+        stdin_file = std.path.join(sql_dir, "notarization-detail.sql"),
+        impact = "low",
+    )
+    if result.failed:
+        ctx.fail("detail query failed", result.error)
+        return
+    if result.stdout != None:
+        print(result.stdout)
+    ctx.success("detail report generated")
+
+# run_summary reports five aggregate stats in one query per stat,
+# UNION ALL'd into a single result set, matching the original script's
+# own shape exactly: total notarized releases, how many of those have
+# a recorded Gatekeeper check at all (older releases won't), and average
+# /min/max propagation delay plus average notarization time across the
+# ones that do. The query itself lives in sql/notarization-summary.sql.
+def run_summary(ctx, journal_db, sql_dir):
+    result = ctx.run(
+        id = "query-summary",
+        program = "sqlite3",
+        args = [journal_db],
+        stdin_file = std.path.join(sql_dir, "notarization-summary.sql"),
+        impact = "low",
+    )
+    if result.failed:
+        ctx.fail("summary query failed", result.error)
+        return
+    if result.stdout != None:
+        print(result.stdout)
+    ctx.success("summary report generated")
