@@ -91,13 +91,32 @@ snippets. See [`examples/`](examples/).
   code-signing, notarizing, rendering the reference manual to PDF,
   checksumming, and publishing.
 
+## Contact 
+
+### ITOR 
+
+I.T. Operational Risk (ITOR) is a small consulting company that
+has specialized in Information Technology risk in production,
+development and test environments. ITOR has 50 years of experience
+evaluating, planning, and improving operational environments and has 
+conducted  many different types of studies associated with, problem 
+and risk identification, incident analysis, problem and risk resolution 
+and the developed of improvement plans and activities in these areas.
+Data collection and the programmatic analysis of data in these areas 
+as been an integral part of those activities.
+
+### eMail
+
+Please contact us at itoperationalrisk at gmail dot com.
+
+
 ## Source
 
 gore's source is developed separately and is not published
 in this repository, by design, not yet, while the project is
 still a prototype. This repository publishes compiled
-release artifacts and release notes only.
+release artifacts, examples and release notes only.
 
 ## License
 
-Copyright 2026 David S. Banham. All rights reserved.
+Copyright 2026 David S. Banham and ITOR. All rights reserved.
