@@ -620,12 +620,14 @@ def verify_gatekeeper_online_check(ctx, cfg, macos_binary):
             program = "spctl",
             args = ["-a", "-vvv", "-t", "install", copy_path],
         ),
-        max_attempts = 10,
+        # apparent delay is about 5 minutes, if it takes longer than 15 mins
+        # then the service should be considered down or unresponsive
+        max_attempts = 16,
         delay = "60s",
     )
     if result.failed:
         ctx.log(
-            "Gatekeeper's online notarization check did not accept the published binary within 10 attempts over ~9 minutes; this is very likely the known notarization-ticket propagation delay, not a broken release, but was not confirmed clear before this run ended, so a manual spctl check later is worth doing",
+            "Gatekeeper's online notarization check did not accept the published binary within 16 attempts over ~15 minutes; this exceeds 3x the typical propagation delay and suggests the notarization service may be down or struggling, though it could still be the known propagation delay (gore-design-baseline.md Section 6a). A manual spctl check later is recommended",
             severity = "warning",
         )
         return
